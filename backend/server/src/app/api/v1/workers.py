@@ -5,7 +5,6 @@ from fastapi import APIRouter, Depends
 from sqlalchemy import select
 
 from ...core.config import settings
-from ...core.constants import KYC_STATUS_MOCK
 from ...core.exceptions.http_exceptions import (
     BadRequestException,
     DuplicateValueException,
@@ -13,7 +12,7 @@ from ...core.exceptions.http_exceptions import (
 )
 from ...core.schemas import Token
 from ...core.security import blacklist_token, create_access_token, oauth2_scheme
-from ...schemas.worker import WorkerLoginRequest, WorkerRead, WorkerRegister
+from ...schemas.worker import KycStatus, WorkerLoginRequest, WorkerRead, WorkerRegister
 from ..dependencies import DBSession, get_current_worker
 
 router = APIRouter(prefix="/workers", tags=["workers"]) 
@@ -42,7 +41,7 @@ async def register_worker(body: WorkerRegister, db: DBSession) -> dict[str, Any]
         zone_id=body.zone_id,
         income_band=body.income_band.upper(),
         aadhaar_hash=aadhaar_hash,
-        kyc_status=KYC_STATUS_MOCK,
+        kyc_status=KycStatus.MOCK_VERIFIED,
     )
     db.add(worker)
     await db.commit()

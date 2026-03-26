@@ -3,8 +3,7 @@ from typing import Annotated, Any
 from fastapi import APIRouter, Depends
 from sqlalchemy import select
 
-from ...core.constants import TRIGGER_STATUS_ACTIVE
-from ...schemas.trigger import TriggerEventRead
+from ...schemas.trigger import TriggerEventRead, TriggerStatus
 from ..dependencies import DBSession, get_admin_user
 
 router = APIRouter(prefix="/triggers", tags=["triggers"])
@@ -18,7 +17,7 @@ async def get_active_triggers(db: DBSession, _: AdminUser) -> list[dict]:
     from ...models.trigger_event import TriggerEvent
 
     result = await db.execute(
-        select(TriggerEvent).where(TriggerEvent.status == TRIGGER_STATUS_ACTIVE)
+        select(TriggerEvent).where(TriggerEvent.status == TriggerStatus.ACTIVE)
     )
     events = result.scalars().all()
     return [{c.name: getattr(e, c.name) for c in TriggerEvent.__table__.columns} for e in events]

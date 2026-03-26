@@ -4,9 +4,9 @@ from typing import Annotated, Any
 from fastapi import APIRouter, Depends
 from sqlalchemy import select
 
-from ...core.constants import POLICY_STATUS_ACTIVE, TIER_BASE_PREMIUM
+from ...core.constants import TIER_BASE_PREMIUM
 from ...core.exceptions.http_exceptions import BadRequestException, NotFoundException
-from ...schemas.policy import PolicyCreate, PolicyRead
+from ...schemas.policy import PolicyCreate, PolicyRead, PolicyStatus
 from ..dependencies import DBSession, get_current_worker
 
 router = APIRouter(prefix="/policies", tags=["policies"])
@@ -21,7 +21,7 @@ async def list_policies(db: DBSession, worker: CurrentWorker) -> list[dict[str, 
 
     result = await db.execute(
         select(Policy).where(
-            Policy.worker_id == worker["id"], Policy.status == POLICY_STATUS_ACTIVE
+            Policy.worker_id == worker["id"], Policy.status == PolicyStatus.ACTIVE
         )
     )
     policies = result.scalars().all()
@@ -40,7 +40,7 @@ async def create_policy(body: PolicyCreate, db: DBSession, worker: CurrentWorker
     # one active policy per worker
     existing = await db.execute(
         select(Policy).where(
-            Policy.worker_id == worker["id"], Policy.status == POLICY_STATUS_ACTIVE
+            Policy.worker_id == worker["id"], Policy.status == PolicyStatus.ACTIVE
         )
     )
     if existing.scalar_one_or_none():
@@ -52,7 +52,7 @@ async def create_policy(body: PolicyCreate, db: DBSession, worker: CurrentWorker
         tier=tier,
         base_premium=base,
         weekly_premium=base,  # M1 engine will update this; stub = base for now
-        status=POLICY_STATUS_ACTIVE,
+        status=PolicyStatus.ACTIVE,
         policy_week=1,
     )
     db.add(policy)
