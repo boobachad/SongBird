@@ -70,5 +70,6 @@ class Settings(BaseSettings):
     TWILIO_WHATSAPP_FROM: str = ""
     TWILIO_WHATSAPP_TO: str = ""
 
+    MOCK_OTP: str = ""
 
 settings = Settings()
